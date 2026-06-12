@@ -1,5 +1,7 @@
-import { Film, ImageIcon, AlertTriangle, XCircle, CheckCircle2 } from 'lucide-react';
-import { MediaScanResult } from '../../types';
+import { Film, ImageIcon, AlertTriangle } from 'lucide-react';
+import type { MediaScanResult } from '../../types';
+import ScoreBar from '../ui/ScoreBar';
+import VerdictBadge from '../ui/VerdictBadge';
 
 export default function MediaResult({ data }: { data: MediaScanResult }) {
   const isVideo = data.type === "video";
@@ -14,16 +16,7 @@ export default function MediaResult({ data }: { data: MediaScanResult }) {
           <span>{isVideo ? "Video analysis" : "Image analysis"}</span>
         </div>
         
-        {data.result === "fake" && (
-          <div className="flex items-center gap-2 font-mono font-bold text-sm tracking-wide px-4 py-2 rounded-full border text-errorRed border-errorBg bg-errorRed/10">
-            <XCircle size={18} strokeWidth={2.5} /> SYNTHETIC DETECTED
-          </div>
-        )}
-        {data.result === "real" && (
-          <div className="flex items-center gap-2 font-mono font-bold text-sm tracking-wide px-4 py-2 rounded-full border text-accentCyan border-successBg bg-accentCyan/10">
-            <CheckCircle2 size={18} strokeWidth={2.5} /> AUTHENTIC
-          </div>
-        )}
+        <VerdictBadge result={data.result} />
       </div>
 
       {data.low_confidence && (
@@ -57,23 +50,6 @@ export default function MediaResult({ data }: { data: MediaScanResult }) {
             <li>Pixel-level analysis detected patterns consistent with {data.result === "fake" ? "AI-generated imagery" : "an unaltered photograph"}.</li>
           )}
         </ul>
-      </div>
-    </div>
-  );
-}
-
-function ScoreBar({ label, value, isFake }: { label: string; value: number; isFake: boolean }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <div className="flex justify-between font-mono text-xs text-inkDim">
-        <span>{label}</span>
-        <span className="text-ink font-bold">{value.toFixed(2)}%</span>
-      </div>
-      <div className="h-2 bg-bgMain rounded-full border border-line overflow-hidden w-full">
-        <div 
-          className={`h-full rounded-full transition-all duration-700 ease-out ${isFake ? 'bg-errorRed' : 'bg-accentCyan'}`}
-          style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        />
       </div>
     </div>
   );

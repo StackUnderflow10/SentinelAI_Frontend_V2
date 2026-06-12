@@ -40,8 +40,12 @@ export default function ScanConsole() {
       } else if (text.trim()) {
         setNewsResult(await factCheck(text.trim()));
       }
-    } catch (e: any) {
-      setError(e.message || "An error occurred during analysis.");
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError("An error occurred during analysis.");
+      }
     } finally {
       setLoading(false);
     }
