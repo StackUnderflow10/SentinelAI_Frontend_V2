@@ -1,4 +1,4 @@
-import { MediaScanResult, NewsResult } from '../types';
+import type { MediaScanResult, NewsResult } from '../types';
 
 const API_BASE = "http://localhost:8000"; // Change this to your deployed URL later
 
