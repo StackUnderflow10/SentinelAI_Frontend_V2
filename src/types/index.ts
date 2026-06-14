@@ -34,3 +34,13 @@ export interface NewsResult {
   };
   error?: string;
 }
+
+export interface AuthUser {
+  username: string;
+  token: string;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+}

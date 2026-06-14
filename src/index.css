@@ -1,1 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Geom:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --color-bgMain: #0a0e0f;
+  --color-bgRaised: #11161a;
+  --color-line: #232b2e;
+  --color-ink: #e9eeec;
+  --color-inkDim: #8b9a98;
+  --color-accentAmber: #ff6b35;
+  --color-accentCyan: #5eead4;
+  --color-errorRed: #ff6b6b;
+  --color-errorBg: #5b2424;
+  --color-successBg: #1f4b46;
+  --color-warnYellow: #ffd166;
+  --color-warnBg: #5b4b1f;
+
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Archivo", "Helvetica Neue", sans-serif;
+
+  --animate-marquee: marquee-scroll 38s linear infinite;
+  --animate-marquee-reverse: marquee-scroll 46s linear infinite reverse;
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+}
+
+html, body, #root {
+  background-color: #0a0e0f;
+  color: #e9eeec;
+  min-height: 100vh;
+}
