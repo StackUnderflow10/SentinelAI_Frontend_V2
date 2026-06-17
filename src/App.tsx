@@ -2,6 +2,8 @@ import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import Marquee from "./components/ui/Marquee";
 import ScanConsole from "./components/scanner/ScanConsole";
+import AnimatedHeroText from "./components/ui/AnimatedHeroText";
+
 
 export default function App() {
   return (
@@ -31,11 +33,7 @@ export default function App() {
           <p className="font-mono text-xs tracking-[0.25em] uppercase text-accentAmber mb-4">
             Forensic media analysis
           </p>
-          <h1 className="font-mono font-display font-extrabold text-[clamp(2.6rem,8vw,4.5rem)] leading-[1.05] tracking-tight mb-5">
-            Is it real?
-            <br />
-            <span className="text-accentCyan">Find out.</span>
-          </h1>
+          <AnimatedHeroText />
           <p className="font-mono text-sm md:text-base text-inkDim leading-relaxed max-w-md mx-auto">
             Drop an image or video, paste a link, or type a headline. Sentinel
             runs it through a deepfake-detection and fact-checking pipeline and
