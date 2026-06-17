@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   ScanSearch,
   Wallet,
@@ -8,9 +8,35 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  ChevronDown,
+  Key,
+  Mail,
+  User
 } from "lucide-react";
 import { login, logout, getToken } from "../../api/scanner";
 import type { AuthUser } from "../../types";
+import ApiKeyModal from "../ui/ApiKeyModal";
+
+// ---------------------------------------------------------------------------
+// Hook: close when clicking outside a ref
+// ---------------------------------------------------------------------------
+function useClickOutside(
+  ref: React.RefObject<HTMLElement | null>,
+  handler: () => void
+) {
+  useEffect(() => {
+    const listener = (e: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(e.target as Node)) return;
+      handler();
+    };
+    document.addEventListener("mousedown", listener);
+    document.addEventListener("touchstart", listener);
+    return () => {
+      document.removeEventListener("mousedown", listener);
+      document.removeEventListener("touchstart", listener);
+    };
+  }, [ref, handler]);
+}
 
 // ---------------------------------------------------------------------------
 // Login Modal
@@ -49,9 +75,14 @@ function LoginModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bgMain/80 backdrop-blur-sm px-4">
+    // Click the backdrop to close
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-bgMain/80 backdrop-blur-sm px-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-bgRaised border border-line rounded-2xl w-full max-w-sm p-6 flex flex-col gap-5 relative">
-        {/* Close */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-inkDim hover:text-ink transition-colors"
@@ -60,7 +91,6 @@ function LoginModal({
           <X size={18} />
         </button>
 
-        {/* Title */}
         <div>
           <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-accentAmber mb-2">
             Sentinel AI
@@ -73,7 +103,6 @@ function LoginModal({
           </p>
         </div>
 
-        {/* Fields */}
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="font-mono text-xs text-inkDim tracking-widest uppercase">
@@ -114,14 +143,12 @@ function LoginModal({
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <p className="font-mono text-xs text-errorRed border border-errorBg bg-errorRed/10 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
 
-        {/* Submit */}
         <button
           onClick={handleSubmit}
           disabled={loading}
@@ -149,9 +176,12 @@ function LoginModal({
 function WalletPill() {
   const [connected, setConnected] = useState(false);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(containerRef, () => setOpen(false));
 
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         className={`flex items-center gap-2 font-mono text-xs px-4 py-2 rounded-full border transition-colors ${
           connected
@@ -201,14 +231,19 @@ function WalletPill() {
 
 export default function Header() {
   const [showLogin, setShowLogin] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [showApiModal, setShowApiModal] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(
-    // Rehydrate from localStorage on mount
     getToken() ? { username: "User", token: getToken()! } : null
   );
+
+  const profileRef = useRef<HTMLDivElement>(null);
+  useClickOutside(profileRef, () => setProfileOpen(false));
 
   const handleLogout = () => {
     logout();
     setUser(null);
+    setProfileOpen(false);
   };
 
   return (
@@ -232,18 +267,61 @@ export default function Header() {
           <WalletPill />
 
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-inkDim hidden sm:block">
-                {user.username}
-              </span>
+            <div className="relative" ref={profileRef}>
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 font-mono text-xs border border-line text-inkDim px-3 py-2 rounded-full hover:text-errorRed hover:border-errorBg transition-colors"
-                aria-label="Sign out"
+                onClick={() => setProfileOpen((o) => !o)}
+                className={`flex items-center gap-2 font-mono text-xs border px-4 py-2 rounded-full transition-colors ${
+                  profileOpen
+                    ? "border-accentAmber text-ink"
+                    : "border-line text-inkDim hover:border-accentAmber hover:text-ink"
+                }`}
+                aria-label="User profile menu"
               >
-                <LogOut size={13} />
-                <span className="hidden sm:block">Sign out</span>
+                <User size={13} />
+                <span className="hidden sm:block">{user.username}</span>
+                <ChevronDown
+                  size={13}
+                  className={`transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}
+                />
               </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-48 bg-bgRaised border border-line rounded-xl p-2 z-30 flex flex-col gap-1 shadow-xl">
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-inkDim px-3 py-2 mb-1 border-b border-line">
+                    Account Menu
+                  </p>
+
+                  <button 
+                    onClick={() => {
+                      setShowApiModal(true);
+                      setProfileOpen(false); // Close dropdown when opening modal
+                    }}
+                    className="flex items-center gap-2 text-left px-3 py-2 text-xs font-mono text-inkDim hover:text-ink hover:bg-bgMain rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Key size={13} />
+                    Get API key
+                  </button>
+                  <button className="flex items-center gap-2 text-left px-3 py-2 text-xs font-mono text-inkDim hover:text-ink hover:bg-bgMain rounded-lg transition-colors cursor-pointer">
+                    <Wallet size={13} />
+                    Solana wallet
+                  </button>
+
+                  <button className="flex items-center gap-2 text-left px-3 py-2 text-xs font-mono text-inkDim hover:text-ink hover:bg-bgMain rounded-lg transition-colors cursor-pointer">
+                    <Mail size={13} />
+                    Contact us
+                  </button>
+
+                  <div className="h-px bg-line my-1 mx-2" />
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 text-left px-3 py-2 text-xs font-mono text-errorRed hover:bg-errorRed/10 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <LogOut size={13} />
+                    Sign out
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -264,6 +342,11 @@ export default function Header() {
             setUser(u);
             setShowLogin(false);
           }}
+        />
+      )}
+      {showApiModal && (
+        <ApiKeyModal 
+          onClose={() => setShowApiModal(false)}
         />
       )}
     </>
